@@ -1,5 +1,8 @@
 import unittest
 import app
+import json
+import urllib.request
+from flask import jsonify
 
 class appUnitTest(unittest.TestCase):
 
@@ -10,6 +13,54 @@ class appUnitTest(unittest.TestCase):
     '''
     def testIndex(self):
         self.assertEqual(app.index(),'Hello World!')
+
+    '''
+    <summary>Unit test for getUsers() function within app.py; Will only work if server is running</summary>
+    <asserts>assertTrue; Checks for json object</asserts>
+    <returns>Success if request returns a JSON object</returns>
+    '''
+    def testGetUsers(self):
+        contents = urllib.request.urlopen('http://127.0.0.1:5000/users').read()
+        self.assertTrue(self.isJsonObject(contents))
+    
+    '''
+    <summary>Unit test for userListFromPwdFile() function within app.py</summary>
+    <asserts>assertEqual; List comparison</asserts>
+    <asserts>assertTrue; Checks if list is empty</asserts>
+    <returns>
+    assertEqual = Success if return list is the same as the list found in /etc/passwd
+    assertTrue = Success if return list is NOT empty
+    </returns>
+    '''
+    def testUserListFromPwdFile(self):
+        userListFromPwdFile = app.userListFromPwdFile()
+        self.assertTrue(len(userListFromPwdFile) != 0)
+        
+        with open('/etc/passwd') as file:
+            userList = file.read().splitlines()
+        for i in range(len(userList)):
+            userList[i] = userList[i].split(':')
+            userList[i] = {
+                'name':userList[i][0],
+                'uid':userList[i][2],
+                'gid':userList[i][3],
+                'comment':userList[i][4],
+                'home':userList[i][5],
+                'shell':userList[i][6]
+            }
+        self.assertEqual(userList, userListFromPwdFile)
+    
+    '''
+    <summary>Checks whether or not an object is a JSON object</summary>
+    <param name = 'jsonObject'>jsonObject is top be checked whether or not it is of a JSON format</param>
+    <returns>True if jsonObject is truly a jsonObject, else False</returns>
+    '''
+    def isJsonObject(self, jsonObject):
+        try:
+            jsonOjectValidate = json.loads(jsonObject)
+        except ValueError:
+            return False
+        return True
 
 '''
 <summary>Main Function that runs unit tests</summary>
