@@ -1,0 +1,8 @@
+root:x:0:0:root:/root:/bin/bash
+bin:x:1:1:bin:/bin:/sbin/nologin
+daemon:x:2:2:daemon:/sbin:/sbin/nologin
+sshd:x:74:74:Privilege-separated SSH:/var/empty/sshd:/sbin/nologin
+tcpdump:x:72:72::/:/sbin/nologin
+mandar:x:500:500:Mandar Shinde:/home/mandar:/bin/bash
+mysql:x:27:27:MySQL Server:/var/lib/mysql:/bin/bash
+nagios:x:501:501::/home/nagios:/bin/bash
