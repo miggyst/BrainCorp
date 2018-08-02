@@ -34,8 +34,22 @@ def getUsers():
 '''
 @app.route('/users/query', methods=['GET'])
 def getUsersQuery():
+
+    for i in request.args):
+        print('I AM IN')
+        print(request.args.getlist(i))
+
     userList = usersQuery()
     return jsonify(userList)
+
+'''
+<summary></summary>
+<returns></returns>
+'''
+@app.route('/users/<uid>', methods=['GET'])
+def usersUid(uid):
+    usersUid = request.view_args['uid']
+    return usersUid
 
 '''
 <summary>userListFromPwdFile function that searches and retrieves user data from /etc/passwd file</summary>
