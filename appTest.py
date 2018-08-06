@@ -44,6 +44,16 @@ class appUnitTest(unittest.TestCase):
         contents = json.loads(contents)
         jsonObject = json.loads('[{"comment": "root","gid": "0","home": "/root","name": "root","shell": "/bin/bash","uid": "0"}]')
         self.assertTrue(jsonObject, contents)
+    '''
+    <summary></summary>
+    <assert></assert>
+    '''
+    def testGetUsersUidGroups(self):
+        contents = urllib.request.urlopen('http://127.0.0.1:5000/users/0/groups').read()
+        contents = (contents.decode('utf-8')).strip(' \\t\\n\\r')
+        contents = json.loads(contents)
+        jsonObject = json.loads('[{"name": "root","uid": "0","members": []}]')
+        self.assertTrue(jsonObject, contents)
 
     '''
     <summary>Unit test for userListFromPwdFile() function within app.py</summary>
@@ -79,6 +89,15 @@ class appUnitTest(unittest.TestCase):
     def testUsersQuery(self):
         usersQuery = app.usersQuery({'blank':'blank'})
         self.assertEqual('Error', usersQuery)
+
+    '''
+    <summary>Unit test for usersGroupsFromUid() function within app.py</summary>
+    <assert>Success if it returns an equal assertion since root user group should not have members in its group (uid: 0, gid: 0)</assert>
+    '''
+    def testUsersGroupsFromUid(self):
+        blankList = []
+        userGidList = app.usersGroupsFromUid(0, 0)
+        self.assertEqual(blankList, userGidList)
 
     '''
     <summary>Checks whether or not an object is a JSON object</summary>
