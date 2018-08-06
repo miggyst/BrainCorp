@@ -17,7 +17,7 @@ class appUnitTest(unittest.TestCase):
     '''
     <summary>Unit test for getUsers() function within app.py; Will only work if server is running</summary>
     <asserts>assertTrue; Checks for json object</asserts>
-    <returns>Success if request returns a JSON object</returns>
+    <returns>Success if request returns a valid JSON object</returns>
     '''
     def testGetUsers(self):
         contents = urllib.request.urlopen('http://127.0.0.1:5000/users').read()
@@ -36,7 +36,7 @@ class appUnitTest(unittest.TestCase):
 
     '''
     <summary>Unit test for getUsersUid() funtion within app.py; Will only work if server is running</summary>
-    <assert>Sucess if requesr returns a JSON object that matches the root JSON object specified within the function</assert>
+    <assert>Sucess if request returns a JSON object that matches the root JSON object specified within the function</assert>
     '''
     def testGetUsersUid(self):
         contents = urllib.request.urlopen('http://127.0.0.1:5000/users/0').read()
@@ -44,9 +44,10 @@ class appUnitTest(unittest.TestCase):
         contents = json.loads(contents)
         jsonObject = json.loads('[{"comment": "root","gid": "0","home": "/root","name": "root","shell": "/bin/bash","uid": "0"}]')
         self.assertTrue(jsonObject, contents)
+    
     '''
-    <summary></summary>
-    <assert></assert>
+    <summary>Unit test for getUsersUidGroup() function within app.py; Will only work if server is running</summary>
+    <assert>Success if request returns a group JSON object that matches the root group JSONobject specified within the function</assert>
     '''
     def testGetUsersUidGroups(self):
         contents = urllib.request.urlopen('http://127.0.0.1:5000/users/0/groups').read()
@@ -56,13 +57,17 @@ class appUnitTest(unittest.TestCase):
         self.assertTrue(jsonObject, contents)
 
     '''
+    <summary>Unit test for getGroups() function within app.py; Will only work if server is running</summary>
+    <assert>Success if request returns a valid JSON object</assert>
+    '''
+    def testGetGroups(self):
+        contents = urllib.request.urlopen('http://127.0.0.1:5000/groups').read()
+        self.assertTrue(self.isJsonObject(contents))
+
+    '''
     <summary>Unit test for userListFromPwdFile() function within app.py</summary>
-    <asserts>assertEqual; List comparison</asserts>
-    <asserts>assertTrue; Checks if list is empty</asserts>
-    <returns>
-    assertEqual = Success if return list is the same as the list found in /etc/passwd
-    assertTrue = Success if return list is NOT empty
-    </returns>
+    <asserts>assertEqual; Success if list are equal</asserts>
+    <asserts>assertTrue; Success if list is not empty</asserts>
     '''
     def testUserListFromPwdFile(self):
         userListFromPwdFile = app.userListFromPwdFile()
@@ -98,6 +103,26 @@ class appUnitTest(unittest.TestCase):
         blankList = []
         userGidList = app.usersGroupsFromUid(0, 0)
         self.assertEqual(blankList, userGidList)
+
+    '''
+    <summary>Unit test for groupListFromGroupFile() function within app.py</summary>
+    <asserts>assertEqual; Success if list are equal</asserts>
+    <asserts>assertTrue; Success if list is not empty</asserts>
+    '''
+    def testGroupListFromGroupFile(self):
+        groupListFromGroupFile = app.groupListFromGroupFile()
+        self.assertTrue(len(groupListFromGroupFile) != 0)
+
+        with open('/etc/group') as file:
+            groupList = file.read().splitlines()
+        for i in range(len(groupList)):
+            groupList[i] = groupList[i].split(':')
+            groupList[i] = {
+                'name':groupList[i][0],
+                'gid':groupList[i][2],
+                'members':groupList[i][3].replace(',', ' ').split()
+            }
+        self.assertEqual(groupList, groupListFromGroupFile)
 
     '''
     <summary>Checks whether or not an object is a JSON object</summary>

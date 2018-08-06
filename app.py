@@ -101,13 +101,25 @@ def getUsersUidGroups(uid):
         return 'Error'
     return jsonify(jsonUsersUidGroups)
 
+'''
+<summary>GET request for /groups web link</summary>
+<returns>List of group information in readable JSON format</returns>
+'''
+@app.route('/groups', methods=['GET'])
+def getGroups():
+    groupList = groupListFromGroupFile()
+    if groupList == 'Error':
+        return 'Error'
+    else:
+        return jsonify(groupList)
 
 
 '''
 <summary>userListFromPwdFile function that searches and retrieves user data from /etc/passwd file</summary>
-<returns>List object of user information except for the encrypted password</returns>
+<returns>List object of user information (name,uid,gid,home, and shell) except for the encrypted password</returns>
 '''
 def userListFromPwdFile():
+    userList = []
     try:
         with open('/etc/passwd') as file:
             userList = file.read().splitlines()
@@ -121,7 +133,8 @@ def userListFromPwdFile():
                 'home':userList[i][5],
                 'shell':userList[i][6]
             }
-    except Exception:
+    except Exception as e:
+        print(e)
         return 'Error'
     return userList
 
@@ -143,7 +156,8 @@ def usersQuery(parameterList):
                         count += 1
             if count == len(parameterList) and count != 0:
                 usersQueryList.append(jsonObject)
-    except Exception:
+    except Exception as e:
+        print(e)
         return 'Error'
     return usersQueryList
 
@@ -160,9 +174,32 @@ def usersGroupsFromUid(uid, gid):
         for jsonObject in userList:
             if (jsonObject['gid'] == str(gid)) and (jsonObject['uid'] != str(uid)):
                userGidList.append(jsonObject['name'])
-    except Exception:
+    except Exception as e:
+        print(e)
         return 'Error'
     return userGidList
+
+'''
+<summary>The groupListFromGroupFile function searches and retrieves the group data from /etc/group file</summary>
+<returns>List objects of group information (name,gid, and members) except for the encrypted group password</returns>
+'''
+def groupListFromGroupFile():
+    groupList = []
+    try:
+        with open('/etc/group') as file:
+            groupList = file.read().splitlines()
+        for i in range(len(groupList)):
+            groupList[i] = groupList[i].split(':')
+            groupList[i] = {
+                'name':groupList[i][0],
+                'gid':groupList[i][2],
+                'members':groupList[i][3].replace(',', ' ').split()
+            }
+    except Exception as e:
+        print(e)
+        return 'Error'
+    return groupList
+
 
 '''
 <summary>Main Function that runs the flask service application</summary>
