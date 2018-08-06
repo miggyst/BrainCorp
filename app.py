@@ -69,7 +69,7 @@ def getUsersUid(uid):
     if not userList:
         return 'Error: 404 uid \'' + str(usersUid) + '\' is not found' 
     else:
-        return jsonify(userList[0])#jsonify(userList)
+        return jsonify(userList[0])
 
 '''
 <summary>GET request for /users/<uid>/groups web link</summary>
@@ -113,6 +113,20 @@ def getGroups():
     else:
         return jsonify(groupList)
 
+@app.route('/groups/<int:gid>', methods=['GET'])
+def getGroupGid(gid):
+    paramList = []
+    groupsGid = request.view_args['gid']
+    paramListData = {}
+    paramListData['gid'] = str(groupsGid)
+    paramList.append(json.dumps(paramListData))
+    gidList = groupsQuery(paramList)
+    if not gidList:
+        return 'Error: 404 gid \'' + str(groupsGid) + '\' is not found' 
+    else:
+        return jsonify(gidList[0])
+
+#-------------------------------HTTP Request are above; General Functions are below-------------------------------#
 
 '''
 <summary>userListFromPwdFile function that searches and retrieves user data from /etc/passwd file</summary>
@@ -160,6 +174,29 @@ def usersQuery(parameterList):
         print(e)
         return 'Error'
     return usersQueryList
+
+'''
+<summary>Function Overloading - The groupsQuery function searches through current groupList found in /etc/groups and cross references GET request parameters to find specific groups</summary>
+<returns>List of group objects</returns>
+<params name='parameterList'>list of paramters passed with the GET request</params>
+'''
+def groupsQuery(parameterList):
+    groupsQueryList = []
+    groupList = groupListFromGroupFile()
+    try:
+        for jsonObject in groupList:
+            count = 0
+            for params in parameterList:
+                jsonParamsObject = json.loads(params)
+                for key, value in jsonParamsObject.items():
+                    if jsonObject[key] == value:
+                        count += 1
+            if count == len(parameterList) and count != 0:
+                groupsQueryList.append(jsonObject)
+    except Exception as e:
+        print(e)
+        return 'Error'
+    return groupsQueryList
 
 '''
 <summary>The usersGroupsFronUid function searches the list of users and appends the name of said objects that has the same 'gid' as the passed parameter</summary>

@@ -42,7 +42,7 @@ class appUnitTest(unittest.TestCase):
         contents = urllib.request.urlopen('http://127.0.0.1:5000/users/0').read()
         contents = (contents.decode('utf-8')).strip(' \\t\\n\\r')
         contents = json.loads(contents)
-        jsonObject = json.loads('[{"comment": "root","gid": "0","home": "/root","name": "root","shell": "/bin/bash","uid": "0"}]')
+        jsonObject = json.loads('{"comment": "root","gid": "0","home": "/root","name": "root","shell": "/bin/bash","uid": "0"}')
         self.assertTrue(jsonObject, contents)
     
     '''
@@ -63,6 +63,19 @@ class appUnitTest(unittest.TestCase):
     def testGetGroups(self):
         contents = urllib.request.urlopen('http://127.0.0.1:5000/groups').read()
         self.assertTrue(self.isJsonObject(contents))
+
+    '''
+    <summary>Unit test for getGroupsUid() funtion within app.py; Will only work if server is running</summary>
+    <assert>Sucess if request returns a JSON object that matches the root JSON object specified within the function</assert>
+    '''
+    def testGetGroupsUid(self):
+        contents = urllib.request.urlopen('http://127.0.0.1:5000/groups/0').read()
+        contents = (contents.decode('utf-8')).strip(' \\t\\n\\r')
+        contents = json.loads(contents)
+        jsonObject = json.loads('{"name": "root","gid": "0","members": []}')
+        self.assertTrue(jsonObject, contents)
+
+#-------------------------------HTTP Request are above; General Functions are below-------------------------------#
 
     '''
     <summary>Unit test for userListFromPwdFile() function within app.py</summary>
@@ -92,8 +105,17 @@ class appUnitTest(unittest.TestCase):
     <assert>Success if it returns an error</assert>
     '''
     def testUsersQuery(self):
-        usersQuery = app.usersQuery({'blank':'blank'})
+        usersQuery = app.usersQuery({'blankUser':'blankUser'})
         self.assertEqual('Error', usersQuery)
+
+    '''
+    <summary>Unit test for groupsQuery() function within app.py</summary>
+    <assert>Success if it returns an error</assert>
+    '''
+    def testGroupsQuery(self):
+        groupsQuery = app.groupsQuery({'blankGroup':'blankGroup'})
+        self.assertEqual('Error', groupsQuery)
+
 
     '''
     <summary>Unit test for usersGroupsFromUid() function within app.py</summary>
