@@ -29,7 +29,10 @@ def getUsers():
 
 '''
 <summary>GET request for /users/query link</summary>
-<returns>List of user information in readable JSON format</returns>
+<returns>
+List of user information in readable JSON format, dependant on specified details;
+Will return 'Error' if a wrong/out-of-bounds key is used. Should be from PARAMETERS as seen above
+</returns>
 '''
 @app.route('/users/query', methods=['GET'])
 def getUsersQuery():
@@ -39,23 +42,35 @@ def getUsersQuery():
     for queryParams in queryList:
         paramListData = {}
         key, value = copyQueryList.popitem()
+        print(key)
+        print(value[0])
         paramListData[key] = value[0]
         jsonParamListData = json.dumps(paramListData)
         paramList.append(jsonParamListData)
+    print(paramList)
     userList = usersQuery(paramList)
     return jsonify(userList)
 
 
 '''
-<summary></summary>
-<returns></returns>
+<summary>GET request for /users/<uid> link</summary>
+<returns>
+List of user information in readable JSON format, dependant on UID;
+Will return a '404' Error if UID is not found
+</returns>
 '''
 @app.route('/users/<int:uid>', methods=['GET'])
-def usersUid(uid):
+def getUsersUid(uid):
+    paramList = []
     usersUid = request.view_args['uid']
-    print(usersUid)
-    userList = usersQuery()
-    return jsonify(userList)
+    paramListData = {}
+    paramListData['uid'] = str(usersUid)
+    paramList.append(json.dumps(paramListData))
+    userList = usersQuery(paramList)
+    if not userList:
+        return 'Error: 404 uid \'' + str(usersUid) + '\' is not found' 
+    else:
+        return jsonify(userList)
 
 '''
 <summary>userListFromPwdFile function that searches and retrieves user data from /etc/passwd file</summary>

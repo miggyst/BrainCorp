@@ -25,10 +25,21 @@ class appUnitTest(unittest.TestCase):
     
     '''
     <summary>Unit test for getUsersQuery() function within app.py; Will only work if server is running</summary>
-    <assert>Success if request returns a JSON object that matches the root JSON object specified</assert>
+    <assert>Success if request returns a JSON object that matches the root JSON object specified within the function</assert>
     '''
     def testGetUsersQuery(self):
         contents = urllib.request.urlopen('http://127.0.0.1:5000/users/query?name=root').read()
+        contents = (contents.decode('utf-8')).strip(' \\t\\n\\r')
+        contents = json.loads(contents)
+        jsonObject = json.loads('[{"comment": "root","gid": "0","home": "/root","name": "root","shell": "/bin/bash","uid": "0"}]')
+        self.assertTrue(jsonObject, contents)
+
+    '''
+    <summary>Unit test for getUsersUid() funtion within app.py; Will only work if server is running</summary>
+    <assert>Sucess if requesr returns a JSON object that matches the root JSON object specified within the function</assert>
+    '''
+    def testGetUsersUid(self):
+        contents = urllib.request.urlopen('http://127.0.0.1:5000/users/0').read()
         contents = (contents.decode('utf-8')).strip(' \\t\\n\\r')
         contents = json.loads(contents)
         jsonObject = json.loads('[{"comment": "root","gid": "0","home": "/root","name": "root","shell": "/bin/bash","uid": "0"}]')
