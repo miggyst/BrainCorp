@@ -5,6 +5,8 @@ from flask import jsonify
 
 app = Flask(__name__)
 
+PARAMETERS = ['name', 'uid', 'gid', 'comment', 'home', 'shell']
+
 '''
 <summary>Index function that returns Hello World!; Outputs the string onto the flask landing page</summary>
 <returns>Hello World!</returns>
@@ -31,9 +33,29 @@ def getUsers():
 '''
 @app.route('/users/query', methods=['GET'])
 def getUsersQuery():
-    userList = usersQuery()
+    paramList = []
+    queryList = request.args.to_dict(flat=False)
+    copyQueryList = queryList.copy()
+    for queryParams in queryList:
+        paramListData = {}
+        key, value = copyQueryList.popitem()
+        paramListData[key] = value[0]
+        jsonParamListData = json.dumps(paramListData)
+        paramList.append(jsonParamListData)
+    userList = usersQuery(paramList)
     return jsonify(userList)
 
+
+'''
+<summary></summary>
+<returns></returns>
+'''
+@app.route('/users/<int:uid>', methods=['GET'])
+def usersUid(uid):
+    usersUid = request.view_args['uid']
+    print(usersUid)
+    userList = usersQuery()
+    return jsonify(userList)
 
 '''
 <summary>userListFromPwdFile function that searches and retrieves user data from /etc/passwd file</summary>
@@ -55,27 +77,21 @@ def userListFromPwdFile():
     return userList
 
 '''
-<summary>
-The usersQuery function searches through current userList found in /etc/passwd and cross references GET request parameters to find specific users
-Must also be tied to a GET request function call since it requires GET request arguments
-</summary>
+<summary>The usersQuery function searches through current userList found in /etc/passwd and cross references GET request parameters to find specific users</summary>
 <returns>List of user objects</returns>
 '''
-def usersQuery():
-    PARAMETERS = ['name', 'uid', 'gid', 'comment', 'home', 'shell']
-    paramList = []
+def usersQuery(parameterList):
     usersQueryList = []
     userList = userListFromPwdFile()
     try:
-        for params in PARAMETERS:
-            if request.args.get(params) is not None:
-                paramList.append(params)
         for jsonObject in userList:
             count = 0
-            for params in paramList:
-                if jsonObject[params] == request.args.get(params):
-                    count += 1
-            if count == len(paramList) and count != 0:
+            for params in parameterList:
+                jsonParamsObject = json.loads(params)
+                for key, value in jsonParamsObject.items():
+                    if jsonObject[key] == value:
+                        count += 1
+            if count == len(parameterList) and count != 0:
                 usersQueryList.append(jsonObject)
         return usersQueryList
     except Exception:

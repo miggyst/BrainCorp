@@ -63,10 +63,10 @@ class appUnitTest(unittest.TestCase):
     
     '''
     <summary>Unit test for usersQuery() function within app.py</summary>
-    <assert>Success if it returns an error; Since the function requires an HTTP call beforehand, the error handler would be called</assert>
+    <assert>Success if it returns an error</assert>
     '''
     def testUsersQuery(self):
-        usersQuery = app.usersQuery()
+        usersQuery = app.usersQuery({'blank':'blank'})
         self.assertEqual('Error', usersQuery)
 
     '''
