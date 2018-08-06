@@ -16,4 +16,7 @@
                 </ul>
             </li>
         </ul>
+        <p1>To run the program, download and locate the program folder using the command line, once inside simply just type:  python app.py     or     python3 app.py</p1>
+        <p2>Running python or python3 only really matters if you have another, older version of python installed (2.x) instead of the designated 3.x, that I've used to develop the service<p2>
+        <p3>To run the unit test, simply run:  python appTest.py     or     python3 appTest.py</p3>
 </body>
