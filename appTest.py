@@ -31,8 +31,8 @@ class appUnitTest(unittest.TestCase):
         contents = urllib.request.urlopen('http://127.0.0.1:5000/users/query?name=root').read()
         contents = (contents.decode('utf-8')).strip(' \\t\\n\\r')
         contents = json.loads(contents)
-        jsonObject = json.loads('[{"comment": "root","gid": "0","home": "/root","name": "root","shell": "/bin/bash","uid": "0"}]')
-        self.assertTrue(jsonObject, contents)
+        jsonObject = json.loads('[{"name": "root", "uid": "0", "gid": "0", "comment": "root", "home": "/root", "shell": "/bin/bash"}]')
+        self.assertEqual(jsonObject, contents)
 
     '''
     <summary>Unit test for getUsersUid() funtion within app.py; Will only work if server is running</summary>
@@ -42,8 +42,8 @@ class appUnitTest(unittest.TestCase):
         contents = urllib.request.urlopen('http://127.0.0.1:5000/users/0').read()
         contents = (contents.decode('utf-8')).strip(' \\t\\n\\r')
         contents = json.loads(contents)
-        jsonObject = json.loads('{"comment": "root","gid": "0","home": "/root","name": "root","shell": "/bin/bash","uid": "0"}')
-        self.assertTrue(jsonObject, contents)
+        jsonObject = json.loads('[{"name": "root", "uid": "0", "gid": "0", "comment": "root", "home": "/root", "shell": "/bin/bash"}]')
+        self.assertEqual(jsonObject, contents)
     
     '''
     <summary>Unit test for getUsersUidGroup() function within app.py; Will only work if server is running</summary>
@@ -54,7 +54,7 @@ class appUnitTest(unittest.TestCase):
         contents = (contents.decode('utf-8')).strip(' \\t\\n\\r')
         contents = json.loads(contents)
         jsonObject = json.loads('[{"name": "root","uid": "0","members": []}]')
-        self.assertTrue(jsonObject, contents)
+        self.assertEqual(jsonObject, contents)
 
     '''
     <summary>Unit test for getGroups() function within app.py; Will only work if server is running</summary>
@@ -73,7 +73,18 @@ class appUnitTest(unittest.TestCase):
         contents = (contents.decode('utf-8')).strip(' \\t\\n\\r')
         contents = json.loads(contents)
         jsonObject = json.loads('{"name": "root","gid": "0","members": []}')
-        self.assertTrue(jsonObject, contents)
+        self.assertEqual(jsonObject, contents)
+
+    '''
+    <summary>Unit test for getGroupsQuery() function within app.py; Will only work if server is running</summary>
+    <assert>Success if request returns a JSON object that matches the root JSON object specified within the function</assert>
+    '''
+    def testGetGroupsQuery(self):
+        contents = urllib.request.urlopen('http://127.0.0.1:5000/groups/query?members=syslog&members=miggy').read()
+        contents = (contents.decode('utf-8')).strip(' \\t\\n\\r')
+        contents = json.loads(contents)
+        jsonObject = json.loads('[{"name": "adm","gid": "4","members":["syslog","miggy"]}]')
+        self.assertEqual(jsonObject, contents)
 
 #-------------------------------HTTP Request are above; General Functions are below-------------------------------#
 
@@ -105,7 +116,9 @@ class appUnitTest(unittest.TestCase):
     <assert>Success if it returns an error</assert>
     '''
     def testUsersQuery(self):
-        usersQuery = app.usersQuery({'blankUser':'blankUser'})
+        queryList = {}
+        queryList['blankUser'] = 'blankUser'
+        usersQuery = app.usersQuery(queryList)
         self.assertEqual('Error', usersQuery)
 
     '''
@@ -113,7 +126,9 @@ class appUnitTest(unittest.TestCase):
     <assert>Success if it returns an error</assert>
     '''
     def testGroupsQuery(self):
-        groupsQuery = app.groupsQuery({'blankGroup':'blankGroup'})
+        queryList = {}
+        queryList['blankUser'] = 'blankUser'
+        groupsQuery = app.groupsQuery(queryList)
         self.assertEqual('Error', groupsQuery)
 
 
@@ -145,6 +160,17 @@ class appUnitTest(unittest.TestCase):
                 'members':groupList[i][3].replace(',', ' ').split()
             }
         self.assertEqual(groupList, groupListFromGroupFile)
+
+    '''
+    <summary>Unit test for jsonifyParameterList() function within app.py</summary>
+    <asserts>Success if list object returns a proper json object</asserts>
+    '''
+    def testJsonifyParameterList(self):
+        parameterList = {}
+        parameterList['name'] = 'root'
+        jsonifyParameterList = app.jsonifyParameterList(parameterList)
+        jsonObject = ['{"name": "root"}']
+        self.assertEqual(jsonObject, jsonifyParameterList)
 
     '''
     <summary>Checks whether or not an object is a JSON object</summary>

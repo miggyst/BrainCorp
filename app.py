@@ -6,8 +6,6 @@ from flask import jsonify
 app = Flask(__name__)
 app.config['JSON_SORT_KEYS'] = False
 
-PARAMETERS = ['name', 'uid', 'gid', 'comment', 'home', 'shell']
-
 '''
 <summary>Index function that returns Hello World!; Outputs the string onto the flask landing page</summary>
 <returns>Hello World!</returns>
@@ -32,23 +30,15 @@ def getUsers():
 <summary>GET request for /users/query web link</summary>
 <returns>
 List of user information in readable JSON format, dependent on specified details;
-Will return 'Error' if a wrong/out-of-bounds key is used. Should be from PARAMETERS as seen above
+Will return 'Error' if a wrong/out-of-bounds key is used.
 </returns>
 '''
 @app.route('/users/query', methods=['GET'])
 def getUsersQuery():
-    paramList = []
     queryList = request.args.to_dict(flat=False)
-    copyQueryList = queryList.copy()
-    for queryParams in queryList:
-        paramListData = {}
-        key, value = copyQueryList.popitem()
-        paramListData[key] = value[0]
-        jsonParamListData = json.dumps(paramListData)
-        paramList.append(jsonParamListData)
+    paramList = jsonifyParameterList(queryList)
     userList = usersQuery(paramList)
     return jsonify(userList)
-
 
 '''
 <summary>GET request for /users/<uid> web link</summary>
@@ -61,15 +51,17 @@ Will return a '404' Error if UID is not found
 @app.route('/users/<int:uid>', methods=['GET'])
 def getUsersUid(uid):
     paramList = []
+    usersUidList = []
     usersUid = request.view_args['uid']
+    usersUidList.append(str(usersUid))
     paramListData = {}
-    paramListData['uid'] = str(usersUid)
+    paramListData['uid'] = usersUidList
     paramList.append(json.dumps(paramListData))
     userList = usersQuery(paramList)
     if not userList:
         return 'Error: 404 uid \'' + str(usersUid) + '\' is not found' 
     else:
-        return jsonify(userList[0])
+        return jsonify(userList)
 
 '''
 <summary>GET request for /users/<uid>/groups web link</summary>
@@ -87,7 +79,7 @@ def getUsersUidGroups(uid):
     jsonUsersUidGroups = []
     try:
         usersUid = request.view_args['uid']
-        paramListData['uid'] = str(usersUid)
+        paramListData['uid'] = [str(usersUid)]
         paramList.append(json.dumps(paramListData))
         userList = usersQuery(paramList)
         userGid = userList[0]['gid']
@@ -118,13 +110,27 @@ def getGroupGid(gid):
     paramList = []
     groupsGid = request.view_args['gid']
     paramListData = {}
-    paramListData['gid'] = str(groupsGid)
+    paramListData['gid'] = [str(groupsGid)]
     paramList.append(json.dumps(paramListData))
     gidList = groupsQuery(paramList)
     if not gidList:
         return 'Error: 404 gid \'' + str(groupsGid) + '\' is not found' 
     else:
         return jsonify(gidList[0])
+
+'''
+<summary>GET request for /groups/query web link</summary>
+<returns>
+List of group information in readable JSON format, dependent on specified details;
+Will return 'Error' if a wrong/out-of-bounds key is used.
+</returns>
+'''
+@app.route('/groups/query', methods=['GET'])
+def getGroupsQuery():
+    queryList = request.args.to_dict(flat=False)
+    paramList = jsonifyParameterList(queryList)
+    groupList = groupsQuery(paramList)
+    return jsonify(groupList)
 
 #-------------------------------HTTP Request are above; General Functions are below-------------------------------#
 
@@ -166,7 +172,7 @@ def usersQuery(parameterList):
             for params in parameterList:
                 jsonParamsObject = json.loads(params)
                 for key, value in jsonParamsObject.items():
-                    if jsonObject[key] == value:
+                    if (jsonObject[key] == value[0]) and (len(value) == 1):
                         count += 1
             if count == len(parameterList) and count != 0:
                 usersQueryList.append(jsonObject)
@@ -189,8 +195,12 @@ def groupsQuery(parameterList):
             for params in parameterList:
                 jsonParamsObject = json.loads(params)
                 for key, value in jsonParamsObject.items():
-                    if jsonObject[key] == value:
-                        count += 1
+                    if key == 'gid':
+                        if (jsonObject[key] == value) or (value[0] == jsonObject[key]):
+                            count += 1
+                    else:
+                        if (jsonObject[key] == value) or (value[0] in jsonObject[key]):
+                            count += 1
             if count == len(parameterList) and count != 0:
                 groupsQueryList.append(jsonObject)
     except Exception as e:
@@ -237,6 +247,24 @@ def groupListFromGroupFile():
         return 'Error'
     return groupList
 
+'''
+<summary>
+The parameterList function parses through the input parameter queryList 
+and jsonifies the given objects in order for other functions to work with it better
+</summary>
+<params name='queryList'>List of query request parameters</params>
+<returns>List of jsonified parameters</returns>
+'''
+def jsonifyParameterList(queryList):
+    paramList = []
+    copyQueryList = queryList.copy()
+    for queryParams in queryList:
+        paramListData = {}
+        key, value = copyQueryList.popitem()
+        paramListData[key] = value
+        jsonParamListData = json.dumps(paramListData)
+        paramList.append(jsonParamListData)
+    return paramList
 
 '''
 <summary>Main Function that runs the flask service application</summary>
