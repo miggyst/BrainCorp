@@ -24,6 +24,17 @@ class appUnitTest(unittest.TestCase):
         self.assertTrue(self.isJsonObject(contents))
     
     '''
+    <summary>Unit test for getUsersQuery() function within app.py; Will only work if server is running</summary>
+    <assert>Success if request returns a JSON object that matches the root JSON object specified</assert>
+    '''
+    def testGetUsersQuery(self):
+        contents = urllib.request.urlopen('http://127.0.0.1:5000/users/query?name=root').read()
+        contents = (contents.decode('utf-8')).strip(' \\t\\n\\r')
+        contents = json.loads(contents)
+        jsonObject = json.loads('[{"comment": "root","gid": "0","home": "/root","name": "root","shell": "/bin/bash","uid": "0"}]')
+        self.assertTrue(jsonObject, contents)
+
+    '''
     <summary>Unit test for userListFromPwdFile() function within app.py</summary>
     <asserts>assertEqual; List comparison</asserts>
     <asserts>assertTrue; Checks if list is empty</asserts>
@@ -50,6 +61,14 @@ class appUnitTest(unittest.TestCase):
             }
         self.assertEqual(userList, userListFromPwdFile)
     
+    '''
+    <summary>Unit test for usersQuery() function within app.py</summary>
+    <assert>Success if it returns an error; Since the function requires an HTTP call beforehand, the error handler would be called</assert>
+    '''
+    def testUsersQuery(self):
+        usersQuery = app.usersQuery()
+        self.assertEqual('Error', usersQuery)
+
     '''
     <summary>Checks whether or not an object is a JSON object</summary>
     <param name = 'jsonObject'>jsonObject is top be checked whether or not it is of a JSON format</param>
