@@ -56,6 +56,7 @@ def getUsersQuery():
 List of user information in readable JSON format, dependent on UID;
 Will return a '404' Error if UID is not found
 </returns>
+<params name='uid'>url parameter object, needed to take note of the request paramter</params>
 '''
 @app.route('/users/<int:uid>', methods=['GET'])
 def getUsersUid(uid):
@@ -74,7 +75,9 @@ def getUsersUid(uid):
 <summary>GET request for /users/<uid>/groups web link</summary>
 <returns>
 User information with a list of tied groups, dependent on UID;
-Will return 'Error' if wrong UID is passed</returns>
+Will return 'Error' if wrong UID is passed
+</returns>
+<params name='uid'>url parameter object, needed to take note of the request parameter</params>
 '''
 @app.route('/users/<int:uid>/groups', methods=['GET'])
 def getUsersUidGroups(uid):
@@ -125,6 +128,7 @@ def userListFromPwdFile():
 '''
 <summary>The usersQuery function searches through current userList found in /etc/passwd and cross references GET request parameters to find specific users</summary>
 <returns>List of user objects</returns>
+<params name='parameterList'>list of paramters passed with the GET request</params>
 '''
 def usersQuery(parameterList):
     usersQueryList = []
@@ -144,8 +148,10 @@ def usersQuery(parameterList):
     return usersQueryList
 
 '''
-<summary></summary>
-<returns></returns>
+<summary>The usersGroupsFronUid function searches the list of users and appends the name of said objects that has the same 'gid' as the passed parameter</summary>
+<returns>List of user 'names' that has the same grouping i.e. 'gid'</returns>
+<params name='uid'>user id, used to identify specific users</params>
+<params name='gid'>group id, used to identify grouping of users</params>
 '''
 def usersGroupsFromUid(uid, gid):
     userGidList = []
